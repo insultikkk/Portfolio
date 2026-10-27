@@ -1,0 +1,66 @@
+name: Windows build
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    tags:
+      - "v*"
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    env:
+      CARGO_BUILD_JOBS: 2
+      LIBCLANG_PATH: 'C:\Program Files\LLVM\bin'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+      - run: npm ci
+      - run: npm test
+      - run: npm run test:extension
+      - name: Prepare local Whisper binaries
+        run: ./scripts/prepare-windows.ps1
+        shell: pwsh
+      - run: cargo test --locked --manifest-path src-tauri/Cargo.toml --lib --tests
+      - run: npm run desktop:build
+      - run: npm run extension:build
+      - name: Package installer, extension and checksums
+        run: ./scripts/package-windows.ps1
+        shell: pwsh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Still-Windows-x64
+          retention-days: 30
+          if-no-files-found: error
+          path: dist/packages/*
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: Still-Windows-x64
+          path: packages
+      - name: Publish personal preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release create "$RELEASE_TAG" packages/* \
+            --verify-tag --prerelease \
+            --title "Still $RELEASE_TAG — personal preview" \
+            --notes-file "docs/releases/$RELEASE_TAG.md"

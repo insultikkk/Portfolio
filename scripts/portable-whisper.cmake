@@ -1,0 +1,17 @@
+# Portable x86-64 baseline. Keep inference usable on machines different from
+# the build host; an accelerated build can be prepared for a known local CPU.
+if(POLICY CMP0091)
+  cmake_policy(SET CMP0091 NEW)
+endif()
+set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded CACHE STRING "Static release CRT" FORCE)
+set(GGML_NATIVE OFF CACHE BOOL "Portable build" FORCE)
+set(GGML_AVX OFF CACHE BOOL "Portable build" FORCE)
+set(GGML_AVX2 OFF CACHE BOOL "Portable build" FORCE)
+set(GGML_AVX512 OFF CACHE BOOL "Portable build" FORCE)
+set(GGML_AVX512_VBMI OFF CACHE BOOL "Portable build" FORCE)
+set(GGML_AVX512_VNNI OFF CACHE BOOL "Portable build" FORCE)
+set(GGML_AVX512_BF16 OFF CACHE BOOL "Portable build" FORCE)
+set(GGML_FMA OFF CACHE BOOL "Portable build" FORCE)
+set(GGML_F16C OFF CACHE BOOL "Portable build" FORCE)
+set(GGML_BMI2 OFF CACHE BOOL "Portable build" FORCE)
+set(GGML_SSE42 OFF CACHE BOOL "Portable build" FORCE)

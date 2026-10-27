@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "Still — SoundCloud Live Lyrics",
+  "version": "0.1.0",
+  "description": "Передаёт текущую песню в локальное приложение Still. Распознавание звука включается отдельно.",
+  "minimum_chrome_version": "116",
+  "permissions": ["storage", "activeTab", "tabCapture", "offscreen"],
+  "host_permissions": ["https://soundcloud.com/*", "http://127.0.0.1/*"],
+  "background": { "service_worker": "background.js", "type": "module" },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Still Live Lyrics"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://soundcloud.com/*"],
+      "js": ["player-main.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": ["https://soundcloud.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src ws://127.0.0.1:18765;"
+  }
+}

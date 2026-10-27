@@ -1,0 +1,7 @@
+[env]
+# Applied to whisper-rs's bundled CMake project. Never optimize a distributed
+# binary for the CI runner's CPU (which may have AVX-512).
+CMAKE_PROJECT_TOP_LEVEL_INCLUDES = { value = "scripts/portable-whisper.cmake", relative = true }
+
+[target.x86_64-pc-windows-msvc]
+rustflags = ["-C", "target-feature=+crt-static"]

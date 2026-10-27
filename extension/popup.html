@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header>
+      <span class="logo" aria-hidden="true">
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+        >
+          <path d="M4 10v4M8 6v12M12 3v18M16 7v10M20 10v4" />
+        </svg>
+      </span>
+      <div><strong>still</strong><span>LIVE LYRICS</span></div>
+      <i id="dot"></i>
+    </header>
+    <main>
+      <h1>Слова рядом.</h1>
+      <p id="status">Подключаемся к приложению…</p>
+      <div id="track"></div>
+      <label for="token">Токен из настроек Still</label
+      ><input
+        id="token"
+        type="password"
+        autocomplete="off"
+        placeholder="Вставьте токен сопряжения"
+        maxlength="64"
+      /><button id="connect">Подключить приложение</button>
+      <div class="divider"></div>
+      <button id="capture" class="secondary">Распознавать эту вкладку</button>
+      <p class="hint">
+        Только звук вкладки SoundCloud. Обработка на компьютере. Микрофон не
+        используется.
+      </p>
+      <p id="error" role="alert"></p>
+    </main>
+    <footer>SoundCloud · Chrome / Edge</footer>
+    <script src="popup.js" type="module"></script>
+  </body>
+</html>

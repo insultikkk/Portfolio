@@ -1,0 +1,31 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Still Live Lyrics",
+  "version": "0.1.0",
+  "identifier": "app.still.lyrics",
+  "build": {
+    "beforeDevCommand": "node scripts/generate-icons.mjs && npm run dev",
+    "devUrl": "http://127.0.0.1:1420",
+    "beforeBuildCommand": "node scripts/generate-icons.mjs && npm run build",
+    "frontendDist": "../dist",
+    "features": ["asr"]
+  },
+  "app": {
+    "windows": [],
+    "security": {
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.sndcdn.com; connect-src ipc: http://ipc.localhost; font-src 'self'; object-src 'none'; base-uri 'self'"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "icon": ["icons/icon.ico"],
+    "resources": { "binaries/*": "binaries/" },
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser",
+        "languages": ["Russian", "English"]
+      }
+    }
+  }
+}

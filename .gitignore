@@ -1,0 +1,17 @@
+node_modules/
+dist/
+target/
+.cache/
+*.log
+test-results/
+playwright-report/
+src-tauri/binaries/
+src-tauri/gen/
+*.local
+.env
+.env.*
+!.env.example
+*.sqlite
+*.sqlite-*
+*.db
+models/

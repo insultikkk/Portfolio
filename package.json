@@ -1,0 +1,41 @@
+{
+  "name": "live-lyrics",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:extension": "node --test extension/tests/*.test.js",
+    "test:smoke": "node scripts/smoke.mjs",
+    "test:media": "node scripts/media-smoke.mjs",
+    "test:extension:smoke": "node scripts/extension-smoke.mjs",
+    "docs:screenshots": "npm run test:smoke && node scripts/update-screenshots.mjs",
+    "format": "prettier --write src extension scripts/*.mjs",
+    "tauri": "tauri",
+    "desktop:dev": "tauri dev",
+    "desktop:build": "tauri build --bundles nsis",
+    "extension:build": "node scripts/package-extension.mjs"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.10.0",
+    "lucide-react": "^0.468.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.0",
+    "@tauri-apps/cli": "^2.10.0",
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "prettier": "^3.9.10",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.5",
+    "vitest": "^3.0.5",
+    "ws": "^8.22.0"
+  }
+}
