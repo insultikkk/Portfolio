@@ -79,16 +79,21 @@ export function LyricsCard({
   const displayActive = delayed ? (doc?.lines.length || 1) - 1 : active;
   useEffect(() => {
     if (!current.current || !list.current) return;
-    list.current.scrollTo({
-      top:
-        current.current.offsetTop -
-        list.current.clientHeight / 2 +
-        current.current.clientHeight / 2,
-      behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
-        ? "instant"
-        : "smooth",
-    });
-  }, [displayActive, doc?.trackKey]);
+    const line = current.current;
+    const viewport = list.current;
+    const center = () =>
+      viewport.scrollTo({
+        top: line.offsetTop - viewport.clientHeight / 2 + line.clientHeight / 2,
+        behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? "instant"
+          : "smooth",
+      });
+    const resize = new ResizeObserver(center);
+    resize.observe(viewport);
+    resize.observe(line);
+    center();
+    return () => resize.disconnect();
+  }, [displayActive, doc?.trackKey, state.settings.fontScale]);
   const artwork = playback?.track.artwork;
   const tint = useArtworkTint(artwork);
   const disconnected = native && !state.connected && !!playback;

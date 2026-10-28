@@ -13,21 +13,25 @@
     sans-serif;
   color: var(--text);
   background: var(--background);
-  font-size: 13px;
+  font-size: 15px;
   color-scheme: dark;
 }
 * {
   box-sizing: border-box;
 }
 body {
-  width: 320px;
+  width: 340px;
   margin: 0;
+}
+button,
+input {
+  font: inherit;
 }
 header {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 24px 24px 12px;
+  padding: 20px 24px 12px;
 }
 .logo {
   display: grid;
@@ -47,7 +51,7 @@ header strong {
 }
 header span:not(.logo) {
   display: block;
-  font-size: 8px;
+  font-size: 11px;
   letter-spacing: 2px;
   color: var(--text-muted);
 }
@@ -73,12 +77,12 @@ h1 {
 p {
   color: var(--text-muted);
   line-height: 1.6;
-  font-size: 12px;
+  font-size: 14px;
 }
 label {
   display: block;
-  margin: 22px 0 8px;
-  font-size: 11px;
+  margin: 18px 0 8px;
+  font-size: 13px;
   color: #c4c4c4;
 }
 input {
@@ -131,10 +135,10 @@ button:disabled {
 .divider {
   height: 1px;
   background: #ffffff14;
-  margin: 22px 0 10px;
+  margin: 18px 0 10px;
 }
 .hint {
-  font-size: 10px;
+  font-size: 13px;
 }
 #error {
   color: #ffb09f;
@@ -142,11 +146,11 @@ button:disabled {
 #track {
   padding: 0;
   color: var(--text);
-  font-size: 12px;
+  font-size: 14px;
 }
 footer {
-  padding: 14px 24px 20px;
-  font-size: 9px;
+  padding: 12px 24px 16px;
+  font-size: 12px;
   color: var(--text-muted);
   letter-spacing: 1px;
 }

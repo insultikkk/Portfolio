@@ -67,6 +67,35 @@ async function checkPalette(target) {
     );
   }
 }
+async function checkActiveCentered(target) {
+  await target.waitForFunction(() => {
+    const line = document.querySelector(".lyric-line.active");
+    const viewport = document.querySelector(".lyrics-viewport");
+    if (!line || !viewport) return false;
+    const a = line.getBoundingClientRect(),
+      b = viewport.getBoundingClientRect();
+    return (
+      Math.abs((a.top + a.bottom - b.top - b.bottom) / 2) < 3 &&
+      a.top >= b.top - 1 &&
+      a.bottom <= b.bottom + 1
+    );
+  });
+  assert.equal(
+    await target
+      .locator(".lyrics-viewport")
+      .evaluate((el) => el.scrollWidth <= el.clientWidth),
+    true,
+  );
+}
+async function checkFontSize(target, expected) {
+  assert.equal(
+    await target
+      .locator(".lyric-line.active")
+      .evaluate((el) => parseFloat(getComputedStyle(el).fontSize)),
+    expected,
+  );
+  await checkActiveCentered(target);
+}
 await mkdir("test-results", { recursive: true });
 try {
   await page.goto(baseUrl, {
@@ -74,6 +103,20 @@ try {
   });
   await page.getByText("Занимайтесь своим.").waitFor();
   await checkPalette(page);
+  await checkFontSize(page, 28);
+  assert.equal(
+    await page
+      .locator(".lyric-line:not(.active)")
+      .first()
+      .evaluate((el) => parseFloat(getComputedStyle(el).fontSize)),
+    22,
+  );
+  assert.ok(
+    (await page
+      .locator(".setting-row")
+      .first()
+      .evaluate((el) => parseFloat(getComputedStyle(el).fontSize))) >= 12,
+  );
   assert.equal(
     await page.locator("h1").evaluate((el) => getComputedStyle(el).color),
     "rgb(245, 245, 245)",
@@ -107,6 +150,11 @@ try {
   assert.match(await page.locator(".range-label").first().innerText(), /60%/);
   await page.getByRole("button", { name: "Оверлей", exact: true }).click();
   await page.getByLabel(/Размер текста/).fill("125");
+  await checkFontSize(page, 35);
+  await page.getByLabel(/Размер текста/).fill("150");
+  await checkFontSize(page, 42);
+  await page.getByLabel(/Размер текста/).fill("100");
+  await checkFontSize(page, 28);
   await page.getByRole("button", { name: "+", exact: true }).click();
   assert.equal(await page.locator("output").innerText(), "+100 мс");
   await page.getByRole("button", { name: "Подключение", exact: true }).click();
@@ -127,7 +175,26 @@ try {
     .click();
   assert.match(await page.getByRole("alert").innerText(), /Windows-приложении/);
   await page.getByRole("button", { name: "Обзор", exact: true }).click();
+  for (const width of [720, 1000]) {
+    await page.setViewportSize({ width, height: 844 });
+    await checkActiveCentered(page);
+    assert.equal(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth > innerWidth,
+      ),
+      false,
+    );
+  }
   await page.setViewportSize({ width: 390, height: 844 });
+  await checkActiveCentered(page);
+  assert.equal(
+    await page.locator(".scene-card").evaluate((el) => {
+      const card = el.getBoundingClientRect(),
+        scene = el.closest(".workspace-scene").getBoundingClientRect();
+      return card.left >= scene.left && card.right <= scene.right;
+    }),
+    true,
+  );
   assert.equal(
     await page.evaluate(
       () => document.documentElement.scrollWidth > innerWidth,
@@ -141,12 +208,13 @@ try {
   });
   await page.locator(".lyric-line.active").waitFor();
   await checkPalette(page);
+  await checkFontSize(page, 28);
   assert.equal(await page.locator(".sidebar").count(), 0);
   assert.equal(await page.locator(".lyrics-card").count(), 1);
   await page.screenshot({ path: "test-results/overlay.png" });
   // Render the actual popup document; only its Chrome transport is mocked.
   const popup = await browser.newPage({
-    viewport: { width: 320, height: 560 },
+    viewport: { width: 340, height: 640 },
   });
   popup.on("pageerror", (e) => failures.push(e.message));
   await popup.addInitScript(() => {
@@ -170,6 +238,18 @@ try {
     waitUntil: "networkidle",
   });
   await checkPalette(popup);
+  assert.equal(
+    await popup
+      .locator("#status")
+      .evaluate((el) => parseFloat(getComputedStyle(el).fontSize)),
+    14,
+  );
+  assert.equal(
+    await popup.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+    true,
+  );
   assert.equal(
     await popup
       .locator("#connect")
@@ -200,7 +280,7 @@ try {
   await popup.close();
   assert.deepEqual(failures, []);
   console.log(
-    "UI smoke passed: black/orange/white palette and text contrast, lyrics, settings, navigation, demo boundaries, responsive layout, standalone overlay, popup UI with mocked Chrome transport.",
+    "UI smoke passed: larger text at 100/125/150%, active-line centering without clipping, black/orange/white palette and contrast, settings, navigation, demo boundaries, responsive layout, standalone overlay, popup UI with mocked Chrome transport.",
   );
 } finally {
   await browser.close();
