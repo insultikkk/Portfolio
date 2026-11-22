@@ -86,9 +86,26 @@
       /^(advertisement|advert|реклама)$/i.test(title) ||
       (expectedDuration > 0 &&
         Math.abs(expectedDuration - p.durationMs) > 3000);
+    // SoundCloud's controls can pause or seek before the underlying media
+    // element reflects the new state. Keep its precise clock when they agree.
+    const playControl = document.querySelector("button.playControls__play");
+    const pausedByPlayer =
+      p.status === "playing" &&
+      playControl &&
+      !playControl.classList.contains("playing");
+    const elapsed = document
+      .querySelector(".playbackTimeline__progressWrapper")
+      ?.getAttribute("aria-valuenow");
+    const timelineMs = elapsed ? Number(elapsed) * 1000 : NaN;
+    const positionMs =
+      !isAd &&
+      Number.isFinite(timelineMs) &&
+      (pausedByPlayer || Math.abs(timelineMs - p.positionMs) > 1500)
+        ? timelineMs
+        : p.positionMs;
     const status = isAd
       ? "ad"
-      : ["playing", "paused", "buffering", "stopped"].includes(p.status)
+      : !pausedByPlayer && ["playing", "buffering", "stopped"].includes(p.status)
         ? p.status
         : "paused";
     const track = {
@@ -108,18 +125,18 @@
         (previous.status === "playing"
           ? (now - previous.observedAtMs) * previous.playbackRate
           : 0)
-      : p.positionMs;
+      : positionMs;
     if (
       !previous ||
       previous.key !== key ||
       previous.status !== status ||
       previous.playbackRate !== p.playbackRate ||
-      Math.abs(predicted - p.positionMs) > 1500
+      Math.abs(predicted - positionMs) > 1500
     )
       epoch = crypto.randomUUID();
     const snapshot = {
       track,
-      positionMs: Math.min(track.durationMs, Math.max(0, p.positionMs)),
+      positionMs: Math.min(track.durationMs, Math.max(0, positionMs)),
       playbackRate: p.playbackRate,
       status,
       observedAtMs: now,

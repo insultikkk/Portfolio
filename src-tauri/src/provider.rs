@@ -8,8 +8,10 @@ use serde::Deserialize;
 #[serde(rename_all = "camelCase")]
 pub struct ApiTrack {
     pub id: u64,
-    #[serde(default, alias = "name")]
+    #[serde(default)]
     pub track_name: String,
+    #[serde(default)]
+    name: String,
     #[serde(default)]
     pub artist_name: String,
     pub duration: f64,
@@ -20,14 +22,22 @@ pub struct ApiTrack {
     pub lyricsfile: Option<String>,
 }
 impl ApiTrack {
+    fn title(&self) -> &str {
+        if self.track_name.is_empty() {
+            &self.name
+        } else {
+            &self.track_name
+        }
+    }
+
     pub fn candidate(&self, t: &Track) -> Candidate {
         Candidate {
             id: self.id,
-            title: self.track_name.clone(),
+            title: self.title().to_owned(),
             artist: self.artist_name.clone(),
             duration_ms: self.duration * 1000.0,
             synced: matches!(self.document(t).sync.as_str(), "line" | "word"),
-            compatible: compatible(t, &self.track_name, self.duration * 1000.0),
+            compatible: compatible(t, self.title(), self.duration * 1000.0),
         }
     }
     pub fn document(&self, t: &Track) -> LyricsDocument {
@@ -81,7 +91,11 @@ impl Lrclib {
     pub fn new() -> Result<Self> {
         Ok(Self {
             client: reqwest::Client::builder()
-                .user_agent("Still-Live-Lyrics/0.1.0 (personal desktop companion)")
+                .user_agent(concat!(
+                    "Still-Live-Lyrics/",
+                    env!("CARGO_PKG_VERSION"),
+                    " (personal desktop companion)"
+                ))
                 .timeout(std::time::Duration::from_secs(15))
                 .build()?,
         })
@@ -133,9 +147,9 @@ impl LyricsProvider for Lrclib {
                 .await?
             {
                 if let Ok(exact) = serde_json::from_value::<ApiTrack>(value) {
-                    if normalize(&exact.track_name) == normalize(&t.title)
+                    if normalize(exact.title()) == normalize(&t.title)
                         && normalize(&exact.artist_name) == normalize(&t.artist)
-                        && compatible(t, &exact.track_name, exact.duration * 1000.0)
+                        && compatible(t, exact.title(), exact.duration * 1000.0)
                     {
                         return Ok(vec![exact]);
                     }
@@ -157,7 +171,7 @@ impl LyricsProvider for Lrclib {
         tracks.retain(|r| {
             r.duration.is_finite()
                 && r.duration > 0.0
-                && (!r.track_name.is_empty())
+                && !r.title().is_empty()
                 && (r.instrumental
                     || r.plain_lyrics.is_some()
                     || r.synced_lyrics.is_some()
@@ -165,7 +179,7 @@ impl LyricsProvider for Lrclib {
         });
         tracks.sort_by_key(|r| {
             (
-                !compatible(t, &r.track_name, r.duration * 1000.0),
+                !compatible(t, r.title(), r.duration * 1000.0),
                 r.synced_lyrics.is_none(),
             )
         });
@@ -180,9 +194,9 @@ pub fn auto_match<'a>(t: &Track, rows: &'a [ApiTrack]) -> Option<&'a ApiTrack> {
     let matches: Vec<_> = rows
         .iter()
         .filter(|r| {
-            normalize(&r.track_name) == normalize(&t.title)
+            normalize(r.title()) == normalize(&t.title)
                 && normalize(&r.artist_name) == normalize(&t.artist)
-                && compatible(t, &r.track_name, r.duration * 1000.0)
+                && compatible(t, r.title(), r.duration * 1000.0)
         })
         .collect();
     (matches.len() == 1).then(|| matches[0])
@@ -190,6 +204,21 @@ pub fn auto_match<'a>(t: &Track, rows: &'a [ApiTrack]) -> Option<&'a ApiTrack> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn accepts_lrclib_search_rows_with_both_title_fields() {
+        let modern: ApiTrack = serde_json::from_value(serde_json::json!({
+            "id": 1, "name": "Legacy name", "trackName": "Song", "duration": 180
+        }))
+        .unwrap();
+        assert_eq!(modern.title(), "Song");
+
+        let legacy: ApiTrack = serde_json::from_value(serde_json::json!({
+            "id": 2, "name": "Song", "duration": 180
+        }))
+        .unwrap();
+        assert_eq!(legacy.title(), "Song");
+    }
     fn t() -> Track {
         Track {
             source: "soundcloud".into(),

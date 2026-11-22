@@ -6,7 +6,12 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import assert from "node:assert/strict";
 
-const server = new WebSocketServer({ host: "127.0.0.1", port: 18765 });
+let expectedOrigin;
+const server = new WebSocketServer({
+  host: "127.0.0.1",
+  port: 18765,
+  verifyClient: ({ origin }) => !!expectedOrigin && origin === expectedOrigin,
+});
 const seen = [];
 const errors = [];
 server.on("connection", (ws, request) => {
@@ -15,7 +20,7 @@ server.on("connection", (ws, request) => {
   ws.on("message", (data) => {
     const message = JSON.parse(data.toString());
     if (message.type === "auth") {
-      assert.equal(message.token, "a".repeat(64));
+      assert.ok(message.token === "a".repeat(64), "Unexpected fixture token");
       authenticated = true;
       ws.send(JSON.stringify({ type: "ready", protocol: 1 }));
     } else {
@@ -60,6 +65,7 @@ try {
   const extensionPath = path.resolve("extension");
   context = await chromium.launchPersistentContext(profile, {
     executablePath,
+    channel: executablePath ? undefined : "chromium",
     headless: true,
     ignoreDefaultArgs: ["--disable-extensions"],
     args: ["--no-sandbox", "--enable-unsafe-extension-debugging"],
@@ -70,6 +76,7 @@ try {
   const loaded = await cdp.send("Extensions.loadUnpacked", {
     path: extensionPath,
   });
+  expectedOrigin = `chrome-extension://${loaded.id}`;
   let worker = context
     .serviceWorkers()
     .find((w) => w.url().includes(loaded.id));

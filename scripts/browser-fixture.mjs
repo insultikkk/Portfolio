@@ -76,6 +76,18 @@ export async function exerciseMedia(page, read) {
     `Media clock error ${Math.abs(estimate - actual.position)}ms`,
   );
   await page.evaluate(() => {
+    const control = document.createElement("button");
+    control.className = "playControls__play";
+    const timeline = document.createElement("div");
+    timeline.className = "playbackTimeline__progressWrapper";
+    timeline.setAttribute("aria-valuenow", "3");
+    document.body.append(control, timeline);
+  });
+  await until(
+    (seen) => seen.at(-1)?.status === "paused" && seen.at(-1)?.positionMs === 3000,
+    "SoundCloud controls override a stale media clock",
+  );
+  await page.evaluate(() => {
     const a = document.querySelector(".playbackSoundBadge__titleLink");
     a.title = "Unknown song";
     a.href = "https://soundcloud.com/uploader/unknown";

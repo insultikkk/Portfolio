@@ -29,6 +29,7 @@ import {
   Volume2,
   X,
 } from "lucide-react";
+import { version } from "../package.json";
 import { command, native, openLink, saveSettings, subscribe } from "./bridge";
 import { formatTime, positionAt } from "./core/sync";
 import { initialState, type Settings, type ViewState } from "./core/types";
@@ -165,7 +166,7 @@ export default function App() {
           <span className="local-dot" />
           Работает на компьютере
           <small>
-            STILL FOR WINDOWS <span>v0.1.0</span>
+            STILL FOR WINDOWS <span>v{version}</span>
           </small>
         </div>
       </aside>
@@ -634,7 +635,7 @@ export default function App() {
                   />
                   <button
                     className="icon-button"
-                    title="Показать токен"
+                    title="Получить токен"
                     onClick={getToken}
                   >
                     <Link2 size={15} />

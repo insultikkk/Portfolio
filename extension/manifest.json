@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Still — SoundCloud Live Lyrics",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Передаёт текущую песню в локальное приложение Still. Распознавание звука включается отдельно.",
   "minimum_chrome_version": "116",
   "permissions": ["storage", "activeTab", "tabCapture", "offscreen"],

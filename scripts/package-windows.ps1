@@ -13,10 +13,12 @@ if ($installers.Count -ne 1) { throw 'Expected exactly one built NSIS installer'
 if (-not (Test-Path 'dist/extension/manifest.json')) { throw 'Build the extension after the frontend first' }
 $output = Join-Path $root 'dist/packages'
 New-Item -ItemType Directory -Force -Path $output | Out-Null
+$installer = Join-Path $output "Still-Setup-$version-x64.exe"
+Copy-Item $installers[0].FullName $installer
 $staging = Join-Path ([System.IO.Path]::GetTempPath()) ('still-package-' + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $staging | Out-Null
 try {
-  Copy-Item $installers[0].FullName (Join-Path $staging "Still-Setup-$version-x64.exe")
+  Copy-Item $installer $staging
   Copy-Item 'dist/extension' (Join-Path $staging 'extension') -Recurse
   Copy-Item 'docs/windows-install.md' (Join-Path $staging 'INSTALL-RU.md')
   $contents = Get-ChildItem $staging -Recurse -File | Sort-Object FullName | ForEach-Object {
@@ -28,7 +30,7 @@ try {
   $extension = Join-Path $output "Still-v$version-Chrome-Edge-extension.zip"
   Compress-Archive -Path (Join-Path $staging '*') -DestinationPath $application -Force
   Compress-Archive -Path 'dist/extension/*' -DestinationPath $extension -Force
-  @($application, $extension) | ForEach-Object {
+  @($installer, $application, $extension) | ForEach-Object {
     '{0}  {1}' -f (Get-FileHash $_ -Algorithm SHA256).Hash.ToLowerInvariant(), [System.IO.Path]::GetFileName($_)
   } | Set-Content (Join-Path $output 'SHA256SUMS.txt') -Encoding utf8
   Write-Host "Download packages and SHA-256 checksums are ready in $output"

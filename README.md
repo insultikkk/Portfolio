@@ -10,7 +10,7 @@
 ![SoundCloud](https://img.shields.io/badge/SoundCloud-Chrome%20%2F%20Edge-ff7a1a?style=flat-square&labelColor=111111)
 ![Local AI](https://img.shields.io/badge/Whisper-local%20AI-ff7a1a?style=flat-square&labelColor=111111)
 
-[Скачать для Windows](https://github.com/insultikkk/Portfolio/releases/tag/v0.1.0) · [Как установить](docs/windows-install.md) · [Статус сборки](https://github.com/insultikkk/Portfolio/actions/workflows/windows.yml)
+[Скачать для Windows](https://github.com/insultikkk/Portfolio/releases/tag/v0.1.1) · [Как установить](docs/windows-install.md) · [Статус сборки](https://github.com/insultikkk/Portfolio/actions/workflows/windows.yml)
 
 </div>
 
@@ -26,16 +26,14 @@
 
 ## Скачать на другой ПК
 
-1. Откройте [версию 0.1.0](https://github.com/insultikkk/Portfolio/releases/tag/v0.1.0) и раздел **Assets**.
-2. Скачайте **`Still-v0.1.0-Windows-x64.zip`** — внутри установщик, папка `extension` для Chrome/Edge и инструкция.
+1. Откройте [версию 0.1.1](https://github.com/insultikkk/Portfolio/releases/tag/v0.1.1) и раздел **Assets**.
+2. Скачайте **`Still-v0.1.1-Windows-x64.zip`** — внутри установщик, папка `extension` для Chrome/Edge и инструкция. Эти файлы также доступны по отдельности.
 3. Распакуйте архив, установите Still и загрузите папку `extension` через «Загрузить распакованное расширение» в браузере.
 4. Сопрягите приложение и расширение токеном из настроек Still. Включите песню в SoundCloud.
 
 Для готового архива не нужны Rust, Node.js и инструменты разработчика. Нужны Windows 10/11 x64 и Chrome/Edge 116+. Подробно — [установка и первый запуск](docs/windows-install.md).
 
-**Первая версия — предварительная и без цифровой подписи.** Windows может показать предупреждение SmartScreen. Проверяйте источник и SHA-256 из релиза; не отключайте защиту системы. Работа поверх окон и реальный захват вкладки требуют ручной проверки на Windows.
-
-Если релиз ещё собирается, его архив появится только после успешного [workflow Windows build](https://github.com/insultikkk/Portfolio/actions/workflows/windows.yml). Кнопка GitHub **Code → Download ZIP** скачивает исходники, а не установленное приложение.
+**Выпуск предварительный, установщик без цифровой подписи.** Windows может показать предупреждение SmartScreen. Контрольные суммы SHA-256 доступны в разделе **Assets**.
 
 ## Как выглядит
 
@@ -81,7 +79,7 @@ npm run extension:build
 
 Установщик появится в `src-tauri/target/release/bundle/nsis`, расширение — в `dist/extension`. Выполняйте сборку расширения **после** frontend-сборки: Vite очищает `dist`. Рабочие процессы не переживают перезапуск — приложение запускается заново из меню Windows.
 
-Альтернатива: открыть **Actions → Windows build → Run workflow**, оставить ветку `main` и тег `v0.1.0`, нажать зелёную **Run workflow**. Сборка берёт исходники именно выбранного тега, сохраняет artifact `Still-Windows-x64` и публикует предварительный GitHub Release с установщиком, расширением и SHA-256. Новый тег версии также запускает сборку автоматически, если GitHub разрешает событие от используемого подключения. Сайт, музыкальные аккаунты и приватные данные workflow не публикует; видимость репозитория не меняет.
+Альтернатива: открыть **Actions → Windows build → Run workflow** и выбрать тег версии. Сборка берёт исходники выбранного тега и сохраняет пакеты в артефакт `Still-Windows-x64`. Установщик и ZIP можно собрать локально командами выше, затем упаковать с помощью `pwsh -File scripts/package-windows.ps1`.
 
 ## Подключение SoundCloud
 
